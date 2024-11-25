@@ -11,11 +11,12 @@
     (if (.isDirectory file)
       (let [contents (->> (.listFiles file)
                           (sort-by #(.getName %)))] ;; Sort contents alphabetically
-        (into [(output file)]
-              (map path->tree contents))) ;; Recur for each item in directory
-      [(output file)])))
+        {(output file) ;; Directory name as the key
+         (into {} (map path->tree contents))}) ;; Recur for each item in directory
+      {(output file) nil}))) ;; File name as the key with nil as the value
 
 (comment
+  (path->tree "src")
   (def my-tree (path->tree "src"))
   (println my-tree)
   (output (io/file "src")) ;; src/

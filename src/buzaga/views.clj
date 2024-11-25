@@ -9,15 +9,23 @@
    (page/include-js "https://cdn.tailwindcss.com")])
 
 (defn render-tree [tree]
-  (let [[name & contents] tree]
-    [:ul.space-x-6
-     [:li (str name)]
-     (when contents
-       (for [item contents]
-         (if (vector? item)
-           (render-tree item)  ;; Recursive call for directories
-           [:li
-            [:a {:href ""} (str item)]])))]))  ;; Simple <li> for files
+  (for [[name content] tree]
+    (if (map? content) ;; Check if it's a directory
+      [:ul.space-x-6
+       [:li name]
+       (render-tree content)]
+      [:li {:href "teste"} name]))) ;; Render files as <li>
+
+(comment
+  (def file-tree-data
+    {"src/"
+     {"buzaga/"
+      {"file_tree_generator" nil,
+       "handler" nil,
+       "views" nil}}})
+  (render-tree file-tree-data)
+  (render-tree (ftg/path->tree "src"))
+  (render-tree (ftg/path->tree "resources/site")))
 
 (defn home-page
   []
@@ -28,19 +36,3 @@
      (render-tree (ftg/path->tree "resources/site"))]
     [:div {:class "flex-1 bg-gray-200"}
      [:h1.text-3xl.font-bold]]]))
-
-(comment
-  (def file-tree-data
-    ["."
-     "deps.edn"
-     "Justfile"
-     ["resources"]
-     ["public"
-      ["css"]
-      "styles.css"]
-     ["src"]
-     ["buzaga"
-      "index.clj"]])
-  (render-tree file-tree-data)
-  (render-tree (ftg/path->tree "src"))
-  (render-tree (ftg/path->tree "resources/site")))
