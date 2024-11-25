@@ -1,5 +1,6 @@
 (ns buzaga.views
-  (:require [hiccup.page :as page]))
+  (:require [hiccup.page :as page]
+            [buzaga.file-tree-generator :as ftg]))
 
 (defn head-section
   [title]
@@ -7,37 +8,16 @@
    [:title title]
    (page/include-js "https://cdn.tailwindcss.com")])
 
-(def file-tree-data
-  ["."
-   "deps.edn"
-   "Justfile"])
-
-(def file-tree
-  ["."
-   "deps.edn"
-   "Justfile"
-   ["resources"
-    ["public"
-     ["css"
-      "styles.css"]]]
-   ["src"
-    ["buzaga"
-     "index.clj"]]])
-
 (defn render-tree [tree]
   (let [[name & contents] tree]
-    (println name)
     [:ul.space-x-6
-     [:li name]
+     [:li (str name)]
      (when contents
        (for [item contents]
          (if (vector? item)
            (render-tree item)  ;; Recursive call for directories
-           [:li item])))]))  ;; Simple <li> for files
-
-(comment
-  (render-tree file-tree)
-  (render-tree file-tree-data))
+           [:li
+            [:a {:href ""} (str item)]])))]))  ;; Simple <li> for files
 
 (defn home-page
   []
@@ -45,9 +25,22 @@
    (head-section "Buzaga")
    [:div.flex.flex-row
     [:div {:class "w-1/4 bg-blue-500"}
-     "Navigation"
-     (render-tree file-tree)]
+     (render-tree (ftg/path->tree "resources/site"))]
     [:div {:class "flex-1 bg-gray-200"}
-     "Main"
-     [:h1.text-3xl.font-bold
-      "Home"]]]))
+     [:h1.text-3xl.font-bold]]]))
+
+(comment
+  (def file-tree-data
+    ["."
+     "deps.edn"
+     "Justfile"
+     ["resources"]
+     ["public"
+      ["css"]
+      "styles.css"]
+     ["src"]
+     ["buzaga"
+      "index.clj"]])
+  (render-tree file-tree-data)
+  (render-tree (ftg/path->tree "src"))
+  (render-tree (ftg/path->tree "resources/site")))

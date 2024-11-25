@@ -26,5 +26,3 @@
   ;; evaluate this form to stop the webapp via the the REPL:
   (.stop server)
   (server))
-
-(println "oi")
